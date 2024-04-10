@@ -17,7 +17,7 @@ open class StrokeSettings: NSObject {
 
     /// Width of the brush
     private static let defaultWidth = CGFloat(10.0)
-    internal var width: CGFloat
+    var width: CGFloat
 
     /// Default initializer
     override public init() {
@@ -56,7 +56,7 @@ open class StrokeSettings: NSObject {
 
 extension StrokeSettings: NSCoding {
     internal static let colorKey = "color"
-    internal static let widthKey = "width"
+    static let widthKey = "width"
 
     /// Used to encode a StrokeSettings with a coder
     open func encode(with aCoder: NSCoder) {

@@ -50,8 +50,8 @@ open class Stroke: NSObject {
 // MARK: - NSCoding
 
 extension Stroke: NSCoding {
-    internal static let pointsKey = "points"
-    internal static let settingsKey = "settings"
+    static let pointsKey = "points"
+    static let settingsKey = "settings"
 
     /// Used to encode a Stroke with a coder
     open func encode(with aCoder: NSCoder) {
