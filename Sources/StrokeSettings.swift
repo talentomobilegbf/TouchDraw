@@ -17,7 +17,7 @@ open class StrokeSettings: NSObject {
 
     /// Width of the brush
     private static let defaultWidth = CGFloat(10.0)
-    var width: CGFloat
+    open var width: CGFloat
 
     /// Default initializer
     override public init() {

@@ -12,10 +12,10 @@ import UIKit
 open class Stroke: NSObject {
 
     /// The points that make up the stroke
-    var points: [CGPoint]
+    open var points: [CGPoint]
 
     /// The properties of the stroke
-    var settings: StrokeSettings
+    open var settings: StrokeSettings
 
     /// Default initializer
     override public init() {
