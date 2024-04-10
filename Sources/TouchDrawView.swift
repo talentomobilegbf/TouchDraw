@@ -51,6 +51,9 @@ open class TouchDrawView: UIView {
 
     /// This is used to render a user's strokes
     fileprivate let imageView = UIImageView()
+    
+    /// This is used to render a user's strokes as mask
+    fileprivate let imageViewMask = UIImageView()
 
     /// Initializes a TouchDrawView instance
     override public init(frame: CGRect) {
@@ -67,12 +70,15 @@ open class TouchDrawView: UIView {
     /// Adds the subviews and initializes stack
     private func initialize(_ frame: CGRect) {
         addSubview(imageView)
+        addSubview(imageViewMask)
         draw(frame)
     }
 
     /// Sets the frames of the subviews
     override open func draw(_ rect: CGRect) {
         imageView.frame = rect
+        imageViewMask.frame = rect
+        imageViewMask.isHidden = true
     }
 
     /// Imports the stack so that previously exported stack can be used
@@ -100,6 +106,15 @@ open class TouchDrawView: UIView {
     /// Used to export the current stack (each individual stroke)
     open func exportStack() -> [Stroke] {
         return stack
+    }
+    
+    open func exportMask() -> UIImage {
+        UIGraphicsBeginImageContextWithOptions(imageViewMask.bounds.size, false, UIScreen.main.scale)
+        imageViewMask.image?.draw(in: imageViewMask.bounds)
+
+        let imageFromContext = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return imageFromContext!
     }
 
     /// Exports the current drawing
@@ -227,8 +242,7 @@ extension TouchDrawView {
     /// Triggered when touches begin
     override open func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first {
-            let stroke = Stroke(points: [touch.location(in: self)],
-                                settings: settings)
+            let stroke = Stroke(points: [touch.location(in: self)], settings: settings)
             stack.append(stroke)
         }
     }
@@ -240,6 +254,7 @@ extension TouchDrawView {
             let lastPoint = stroke.points.last
             let currentPoint = touch.location(in: self)
             drawLineWithContext(fromPoint: lastPoint!, toPoint: currentPoint, properties: stroke.settings)
+            drawLineWithContextMask(fromPoint: lastPoint!, toPoint: currentPoint, properties: stroke.settings)
             stroke.points.append(currentPoint)
         }
     }
@@ -250,6 +265,7 @@ extension TouchDrawView {
         if stroke.points.count == 1 {
             let lastPoint = stroke.points.last!
             drawLineWithContext(fromPoint: lastPoint, toPoint: lastPoint, properties: stroke.settings)
+            drawLineWithContextMask(fromPoint: lastPoint, toPoint: lastPoint, properties: stroke.settings)
         }
 
         if !touchDrawUndoManager.canUndo {
@@ -276,10 +292,21 @@ fileprivate extension TouchDrawView {
     func beginImageContext() {
         UIGraphicsBeginImageContextWithOptions(imageView.bounds.size, false, UIScreen.main.scale)
     }
+    
+    /// Begins the image context mask
+    func beginImageContextMask() {
+        UIGraphicsBeginImageContextWithOptions(imageViewMask.bounds.size, false, UIScreen.main.scale)
+    }
 
     /// Ends image context and sets UIImage to what was on the context
     func endImageContext() {
         imageView.image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+    }
+    
+    /// Ends image context and sets UIImage to what was on the context mask
+    func endImageContextMask() {
+        imageViewMask.image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
     }
 
@@ -287,20 +314,51 @@ fileprivate extension TouchDrawView {
     func drawCurrentImage() {
         imageView.image?.draw(in: imageView.bounds)
     }
+    
+    /// Draws the current image for context mask
+    func drawCurrentImageMask() {
+        imageViewMask.image?.draw(in: imageViewMask.bounds)
+    }
 
     /// Clears view, then draws stack
     func redrawStack() {
-        if imageView.frame.size == .zero { return }
+        if imageView.frame.size == .zero, imageViewMask.frame.size == .zero { return }
         beginImageContext()
         image?.draw(in: imageView.bounds)
         for stroke in stack {
             drawStroke(stroke)
         }
         endImageContext()
+        
+        // Mask
+        beginImageContextMask()
+        image?.draw(in: imageViewMask.bounds)
+        for stroke in stack {
+            drawStrokeMask(stroke)
+        }
+        endImageContextMask()
     }
 
     /// Draws a single Stroke
     func drawStroke(_ stroke: Stroke) {
+        let properties = stroke.settings
+        let points = stroke.points
+
+        if points.count == 1 {
+            let point = points[0]
+            drawLine(fromPoint: point, toPoint: point, properties: properties)
+        }
+
+        for index in stride(from: 1, to: points.count, by: 1) {
+            let point0 = points[index - 1]
+            let point1 = points[index]
+            drawLine(fromPoint: point0, toPoint: point1, properties: properties)
+        }
+    }
+    
+    /// Draws a single Stroke mask
+    func drawStrokeMask(_ stroke: Stroke) {
+        stroke.settings.color = .white
         let properties = stroke.settings
         let points = stroke.points
 
@@ -322,6 +380,14 @@ fileprivate extension TouchDrawView {
         drawCurrentImage()
         drawStroke(stroke)
         endImageContext()
+    }
+    
+    /// Draws a single Stroke (begins/ends context mask
+    func drawStrokeWithContextMask(_ stroke: Stroke) {
+        beginImageContextMask()
+        drawCurrentImageMask()
+        drawStrokeMask(stroke)
+        endImageContextMask()
     }
 
     /// Draws a line between two points
@@ -353,5 +419,14 @@ fileprivate extension TouchDrawView {
         drawCurrentImage()
         drawLine(fromPoint: fromPoint, toPoint: toPoint, properties: properties)
         endImageContext()
+    }
+    
+    /// Draws a line between two points (begins/ends context) mask
+    func drawLineWithContextMask(fromPoint: CGPoint, toPoint: CGPoint, properties: StrokeSettings) {
+        properties.color = .white
+        beginImageContextMask()
+        drawCurrentImageMask()
+        drawLine(fromPoint: fromPoint, toPoint: toPoint, properties: properties)
+        endImageContextMask()
     }
 }
