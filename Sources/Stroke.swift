@@ -45,6 +45,10 @@ open class Stroke: NSObject {
 
         self.init(points: points!, settings: settings!)
     }
+    
+    open func getPoints() -> [CGPoint] {
+        return points
+    }
 }
 
 // MARK: - NSCoding
