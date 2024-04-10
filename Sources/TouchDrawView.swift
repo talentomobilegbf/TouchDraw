@@ -39,6 +39,9 @@ open class TouchDrawView: UIView {
     open var image: UIImage? {
         didSet(oldImage) { redrawStack() }
     }
+    
+    /// Drawn underneath the strokes mask
+    open var imageMask: UIImage?
 
     /// Used to register undo and redo actions
     fileprivate var touchDrawUndoManager = UndoManager()
@@ -109,6 +112,7 @@ open class TouchDrawView: UIView {
     }
     
     open func exportMask() -> UIImage {
+        redrawStackMask()
         UIGraphicsBeginImageContextWithOptions(imageViewMask.bounds.size, false, UIScreen.main.scale)
         imageViewMask.image?.draw(in: imageViewMask.bounds)
 
@@ -328,6 +332,19 @@ fileprivate extension TouchDrawView {
         }
         endImageContext()
     }
+    
+    /// Clears view, then draws stack mask
+    func redrawStackMask() {
+        if imageViewMask.frame.size == .zero { return }
+        imageMask = imageMask?.withBackground(color: .black)
+        beginImageContextMask()
+        imageMask?.draw(in: imageViewMask.bounds)
+        for stroke in stack {
+            stroke.settings.color = .white
+            drawStrokeMask(stroke)
+        }
+        endImageContext()
+    }
 
     /// Draws a single Stroke
     func drawStroke(_ stroke: Stroke) {
@@ -417,4 +434,21 @@ fileprivate extension TouchDrawView {
         drawLine(fromPoint: fromPoint, toPoint: toPoint, properties: properties)
         endImageContextMask()
     }
+}
+
+extension UIImage {
+  func withBackground(color: UIColor, opaque: Bool = true) -> UIImage {
+    UIGraphicsBeginImageContextWithOptions(size, opaque, scale)
+        
+    guard let ctx = UIGraphicsGetCurrentContext(), let image = cgImage else { return self }
+    defer { UIGraphicsEndImageContext() }
+        
+    let rect = CGRect(origin: .zero, size: size)
+    ctx.setFillColor(color.cgColor)
+    ctx.fill(rect)
+    ctx.concatenate(CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: size.height))
+    ctx.draw(image, in: rect)
+        
+    return UIGraphicsGetImageFromCurrentImageContext() ?? self
+  }
 }
