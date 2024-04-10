@@ -79,6 +79,7 @@ open class TouchDrawView: UIView {
         imageView.frame = rect
         imageViewMask.frame = rect
         imageViewMask.isHidden = true
+        imageViewMask.backgroundColor = .black
     }
 
     /// Imports the stack so that previously exported stack can be used
