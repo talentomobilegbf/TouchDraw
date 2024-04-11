@@ -112,14 +112,21 @@ open class TouchDrawView: UIView {
     }
     
     open func exportMask() -> UIImage {
-        imageViewMask.isHidden = false
+        /*imageViewMask.isHidden = false
         UIGraphicsBeginImageContextWithOptions(imageViewMask.bounds.size, false, UIScreen.main.scale)
         imageViewMask.image?.draw(in: imageViewMask.bounds)
         redrawStackMask()
 
         let imageFromContext = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        return imageFromContext!//.withBackground(color: .black)
+        return imageFromContext!//.withBackground(color: .black)*/
+        UIGraphicsBeginImageContextWithOptions(imageView.bounds.size, false, UIScreen.main.scale)
+        redrawStackMask()
+        imageView.image?.draw(in: imageView.bounds)
+
+        let imageFromContext = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return imageFromContext!
     }
 
     /// Exports the current drawing
@@ -325,7 +332,7 @@ fileprivate extension TouchDrawView {
 
     /// Clears view, then draws stack
     func redrawStack() {
-        if imageView.frame.size == .zero, imageViewMask.frame.size == .zero { return }
+        if imageView.frame.size == .zero { return }
         beginImageContext()
         image?.draw(in: imageView.bounds)
         for stroke in stack {
@@ -336,14 +343,22 @@ fileprivate extension TouchDrawView {
     
     /// Clears view, then draws stack mask
     func redrawStackMask() {
-        if imageViewMask.frame.size == .zero { return }
+        if imageView.frame.size == .zero { return }
+        beginImageContext()
+        image?.draw(in: imageView.bounds)
+        for stroke in stack {
+            stroke.settings.color = .blue
+            drawStroke(stroke)
+        }
+        endImageContext()
+        /*if imageViewMask.frame.size == .zero { return }
         beginImageContextMask()
         imageMask?.draw(in: imageViewMask.bounds)
         for stroke in stack {
             stroke.settings.color = .blue
             drawStrokeMask(stroke)
         }
-        endImageContext()
+        endImageContext()*/
     }
 
     /// Draws a single Stroke
