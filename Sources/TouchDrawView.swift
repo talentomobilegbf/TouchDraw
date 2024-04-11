@@ -121,6 +121,9 @@ open class TouchDrawView: UIView {
         UIGraphicsEndImageContext()
         return imageFromContext!//.withBackground(color: .black)*/
         UIGraphicsBeginImageContextWithOptions(imageView.bounds.size, false, UIScreen.main.scale)
+        let color = UIColor.black
+        color.setFill()
+        UIRectFill(imageView.bounds)
         redrawStackMask()
         imageView.image?.draw(in: imageView.bounds)
 
@@ -345,8 +348,7 @@ fileprivate extension TouchDrawView {
     func redrawStackMask() {
         if imageView.frame.size == .zero { return }
         beginImageContext()
-        image?.withBackground(color: .black).draw(in: imageView.bounds)
-        //image = image?.withBackground(color: .black)
+        image?.draw(in: imageView.bounds)
         for stroke in stack {
             stroke.settings.color = .blue
             drawStroke(stroke)
