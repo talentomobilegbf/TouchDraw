@@ -118,7 +118,7 @@ open class TouchDrawView: UIView {
 
         let imageFromContext = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        return imageFromContext!.withBackground(color: .blue)
+        return imageFromContext!.withBackground(color: .black)
     }
 
     /// Exports the current drawing
