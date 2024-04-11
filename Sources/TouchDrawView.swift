@@ -337,11 +337,10 @@ fileprivate extension TouchDrawView {
     /// Clears view, then draws stack mask
     func redrawStackMask() {
         if imageViewMask.frame.size == .zero { return }
-        //imageMask = imageMask?.withBackground(color: .black)
         beginImageContextMask()
         imageMask?.draw(in: imageViewMask.bounds)
         for stroke in stack {
-            stroke.settings.color = .white
+            stroke.settings.color = .blue
             drawStrokeMask(stroke)
         }
         endImageContext()
