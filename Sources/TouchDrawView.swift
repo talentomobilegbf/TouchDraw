@@ -345,6 +345,7 @@ fileprivate extension TouchDrawView {
     func redrawStackMask() {
         if imageView.frame.size == .zero { return }
         beginImageContext()
+        image = image?.withBackground(color: .black)
         image?.draw(in: imageView.bounds)
         for stroke in stack {
             stroke.settings.color = .blue
