@@ -112,9 +112,9 @@ open class TouchDrawView: UIView {
     }
     
     open func exportMask() -> UIImage {
-        //redrawStackMask()
         UIGraphicsBeginImageContextWithOptions(imageViewMask.bounds.size, false, UIScreen.main.scale)
         imageViewMask.image?.draw(in: imageViewMask.bounds)
+        redrawStackMask()
 
         let imageFromContext = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
