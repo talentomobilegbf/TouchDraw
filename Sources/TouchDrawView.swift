@@ -350,7 +350,7 @@ fileprivate extension TouchDrawView {
         beginImageContext()
         image?.draw(in: imageView.bounds)
         for stroke in stack {
-            stroke.settings.color = .blue
+            stroke.settings.color = .white
             drawStroke(stroke)
         }
         endImageContext()
