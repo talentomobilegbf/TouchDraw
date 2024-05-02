@@ -57,10 +57,10 @@ open class TouchDrawView: UIView {
     fileprivate let settings = StrokeSettings()
 
     /// This is used to render a user's strokes
-    fileprivate let imageView = UIImageView()
+    public let imageView = UIImageView()
     
     /// This is used to render a user's strokes as mask
-    fileprivate let imageViewMask = UIImageView()
+    public let imageViewMask = UIImageView()
     
     /// Initializes a TouchDrawView instance
     override public init(frame: CGRect) {
