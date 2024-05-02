@@ -253,9 +253,50 @@ open class TouchDrawView: UIView {
 // MARK: - Touch Actions
 
 extension TouchDrawView {
+    
+    public func touchesBeganCustom(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            let stroke = Stroke(points: [touch.location(in: self)], settings: settings)
+            stack.append(stroke)
+        }
+    }
+
+    /// Triggered when touches move
+    public func touchesMovedCustom(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            let stroke = stack.last!
+            let lastPoint = stroke.points.last
+            let currentPoint = touch.location(in: self)
+            drawLineWithContext(fromPoint: lastPoint!, toPoint: currentPoint, properties: stroke.settings)
+            stroke.points.append(currentPoint)
+        }
+    }
+
+    /// Triggered whenever touches end, resulting in a newly created Stroke
+    public func touchesEndedCustom(_ touches: Set<UITouch>, with event: UIEvent?) {
+        let stroke = stack.last!
+        if stroke.points.count == 1 {
+            let lastPoint = stroke.points.last!
+            drawLineWithContext(fromPoint: lastPoint, toPoint: lastPoint, properties: stroke.settings)
+        }
+
+        if !touchDrawUndoManager.canUndo {
+            delegate?.undoEnabled?()
+        }
+
+        if touchDrawUndoManager.canRedo {
+            delegate?.redoDisabled?()
+        }
+
+        if stack.count == 1 {
+            delegate?.clearEnabled?()
+        }
+
+        touchDrawUndoManager.registerUndo(withTarget: self, selector: #selector(popDrawing), object: nil)
+    }
 
     /// Triggered when touches begin
-    override open func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    /*override open func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first {
             let stroke = Stroke(points: [touch.location(in: self)], settings: settings)
             stack.append(stroke)
@@ -294,7 +335,7 @@ extension TouchDrawView {
         }
 
         touchDrawUndoManager.registerUndo(withTarget: self, selector: #selector(popDrawing), object: nil)
-    }
+    }*/
 }
 
 // MARK: - Drawing
