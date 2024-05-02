@@ -58,8 +58,6 @@ open class TouchDrawView: UIView {
     /// This is used to render a user's strokes as mask
     fileprivate let imageViewMask = UIImageView()
     
-    var magnifyGlass: MagnifyGlass?
-
     /// Initializes a TouchDrawView instance
     override public init(frame: CGRect) {
         super.init(frame: frame)
@@ -260,12 +258,6 @@ extension TouchDrawView {
         if let touch = touches.first {
             let stroke = Stroke(points: [touch.location(in: self)], settings: settings)
             stack.append(stroke)
-            if magnifyGlass == nil {
-                magnifyGlass = MagnifyGlass.init(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
-                magnifyGlass?.viewToMagnify = self
-                magnifyGlass?.setTouchPoint(pt: touch.location(in: self))
-                self.addSubview(magnifyGlass!)
-            }
         }
     }
 
@@ -277,8 +269,6 @@ extension TouchDrawView {
             let currentPoint = touch.location(in: self)
             drawLineWithContext(fromPoint: lastPoint!, toPoint: currentPoint, properties: stroke.settings)
             stroke.points.append(currentPoint)
-            magnifyGlass?.setTouchPoint(pt: currentPoint)
-            magnifyGlass?.setNeedsDisplay()
         }
     }
 
@@ -303,11 +293,6 @@ extension TouchDrawView {
         }
 
         touchDrawUndoManager.registerUndo(withTarget: self, selector: #selector(popDrawing), object: nil)
-        
-        if magnifyGlass != nil {
-            magnifyGlass?.removeFromSuperview()
-            magnifyGlass = nil
-        }
     }
 
     /// Triggered when touches begin
